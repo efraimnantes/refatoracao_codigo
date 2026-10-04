@@ -3,86 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apuração JIUFMS</title>
+    <title>Apuração e Ranking Geral - JIUFMS</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
-        label { font-weight: bold; margin-top: 10px; display: block; }
-        input, select { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        button:hover { background-color: #004494; }
-        .resultado { margin-top: 20px; padding: 15px; border-radius: 4px; font-weight: bold; text-align: center; }
-        .sucesso { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .erro { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        :root {
+            --primary: #0056b3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --bg: #f8f9fa;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: var(--primary);
+            text-align: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .btn-clear {
+            background-color: var(--danger);
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .status-desclassificado {
+            color: var(--danger);
+            font-weight: bold;
+        }
+        .status-ativo {
+            color: var(--success);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Apuração JIUFMS 🏆</h2>
-    
-    <label for="nomeAtletica">Nome da Atlética:</label>
-    <input type="text" id="nomeAtletica" placeholder="Ex: Engenharia">
+    <h1>🏆 Sistema de Apuração - JIUFMS</h1>
+    <p style="text-align:center;">Cadastre os resultados das modalidades para atualizar o Ranking Geral em tempo real.</p>
 
-    <label for="posicoes">Posições (separadas por vírgula):</label>
-    <input type="text" id="posicoes" placeholder="Ex: 1, 2, 4 (Ouro, Prata, Participação)">
+    <form id="formApuracao">
+        <div class="form-group">
+            <label for="atletica">Nome da Atlética:</label>
+            <input type="text" id="atletica" placeholder="Ex: Engenharia, Medicina, Direito" required>
+        </div>
 
-    <label for="infracao">Infrações Disciplinares:</label>
-    <select id="infracao">
-        <option value="NENHUMA">Nenhuma Infração</option>
-        <option value="BRIGA">Briga (-50 pontos)</option>
-        <option value="PRECONCEITO">Preconceito (Desclassificação)</option>
-    </select>
+        <div class="grid">
+            <div class="form-group">
+                <label for="esporte">Modalidade Esportiva:</label>
+                <select id="esporte" required>
+                    <option value="1.0">Futsal (Peso 1.0)</option>
+                    <option value="1.0">Basquete (Peso 1.0)</option>
+                    <option value="1.0">Vôlei (Peso 1.0)</option>
+                    <option value="1.0">Handebol (Peso 1.0)</option>
+                    <option value="0.75">Atletismo (Peso 0.75)</option>
+                    <option value="0.75">Natação (Peso 0.75)</option>
+                </select>
+            </div>
 
-    <button onclick="calcularPontuacao()">Calcular Pontuação Final</button>
+            <div class="form-group">
+                <label for="colocacao">Colocação Obtida:</label>
+                <select id="colocacao" required>
+                    <option value="50">1º Lugar (Ouro - 50 pts)</option>
+                    <option value="30">2º Lugar (Prata - 30 pts)</option>
+                    <option value="20">3º Lugar (Bronze - 20 pts)</option>
+                    <option value="5">Participação (5 pts)</option>
+                </select>
+            </div>
+        </div>
 
-    <div id="boxResultado" class="resultado" style="display: none;"></div>
+        <div class="form-group">
+            <label for="infracao">Infração Disciplinar:</label>
+            <select id="infracao">
+                <option value="NENHUMA">Nenhuma Infração</option>
+                <option value="BRIGA">Briga em Quadra/Torcida (-50 pts)</option>
+                <option value="PRECONCEITO">Preconceito/Discriminação (Desclassificação)</option>
+            </select>
+        </div>
+
+        <button type="submit">Salvar Resultado no Banco Local</button>
+    </form>
+
+    <h2>📊 Ranking Geral das Atléticas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Posição</th>
+                <th>Atlética</th>
+                <th>Pontos Obtidos</th>
+                <th>Penalidades</th>
+                <th>Pontuação Final</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaRanking">
+            <!-- Linhas inseridas dinamicamente pelo JavaScript -->
+        </tbody>
+    </table>
+
+    <button class="btn-clear" onclick="limparBancoDados()">Limpar Banco de Dados (Zerar Ranking)</button>
 </div>
 
 <script>
-    // Reprodução da Lógica Limpa no Front-End
-    const PONTOS_OURO = 50;
-    const PONTOS_PRATA = 30;
-    const PONTOS_BRONZE = 20;
-    const PONTOS_PARTICIPACAO = 5;
-    const PENALIDADE_BRIGA = 50;
+    document.getElementById('formApuracao').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    function calcularPontuacao() {
-        const nome = document.getElementById('nomeAtletica').value;
-        const posicoesInput = document.getElementById('posicoes').value;
+        const nome = document.getElementById('atletica').value.trim();
+        const peso = parseFloat(document.getElementById('esporte').value);
+        const pontosBase = parseInt(document.getElementById('colocacao').value);
         const infracao = document.getElementById('infracao').value;
-        const boxResultado = document.getElementById('boxResultado');
 
-        boxResultado.style.display = 'block';
+        const pontosModalidade = Math.round(pontosBase * peso);
 
-        // Cláusula de Guarda (Separação de Fluxos de Execução)
-        if (infracao === "PRECONCEITO") {
-            boxResultado.className = 'resultado erro';
-            boxResultado.innerHTML = `⚠️ Desclassificação: A Atlética ${nome || 'informada'} cometeu infração gravíssima (Preconceito).`;
-            return;
+        let penalidade = 0;
+        let desclassificado = false;
+
+        if (infracao === 'BRIGA') {
+            penalidade = 50;
+        } else if (infracao === 'PRECONCEITO') {
+            desclassificado = true;
         }
 
-        // Calcula os pontos baseados no array de posições
-        let pontos = 0;
-        if (posicoesInput.trim() !== "") {
-            const posicoesArray = posicoesInput.split(',').map(num => parseInt(num.trim()));
-            posicoesArray.forEach(pos => {
-                if (pos === 1) pontos += PONTOS_OURO;
-                else if (pos === 2) pontos += PONTOS_PRATA;
-                else if (pos === 3) pontos += PONTOS_BRONZE;
-                else if (!isNaN(pos)) pontos += PONTOS_PARTICIPACAO;
+        salvarNoBancoLocal(nome, pontosModalidade, penalidade, desclassificado);
+        document.getElementById('formApuracao').reset();
+        carregarRanking();
+    });
+
+    function salvarNoBancoLocal(nome, pontos, penalidade, desclassificado) {
+        let banco = JSON.parse(localStorage.getItem('jiufms_db')) || {};
+
+        if (!banco[nome]) {
+            banco[nome] = {
+                pontosBrutos: 0,
+                penalidadesTotal: 0,
+                desclassificado: false
+            };
+        }
+
+        if (desclassificado) {
+            banco[nome].desclassificado = true;
+        } else {
+            banco[nome].pontosBrutos += pontos;
+            banco[nome].penalidadesTotal += penalidade;
+        }
+
+        localStorage.setItem('jiufms_db', JSON.stringify(banco));
+    }
+
+    function carregarRanking() {
+        let banco = JSON.parse(localStorage.getItem('jiufms_db')) || {};
+        let lista = [];
+
+        for (let nome in banco) {
+            let item = banco[nome];
+            let pontuacaoFinal = Math.max(0, item.pontosBrutos - item.penalidadesTotal);
+            if (item.desclassificado) pontuacaoFinal = 0;
+
+            lista.push({
+                nome: nome,
+                pontosBrutos: item.pontosBrutos,
+                penalidades: item.penalidadesTotal,
+                pontuacaoFinal: pontuacaoFinal,
+                desclassificado: item.desclassificado
             });
         }
 
-        // Aplica penalidades menores
-        if (infracao === "BRIGA") {
-            pontos -= PENALIDADE_BRIGA;
+        // Ordena por pontuação final (maior para menor)
+        lista.sort((a, b) => {
+            if (a.desclassificado) return 1;
+            if (b.desclassificado) return -1;
+            return b.pontuacaoFinal - a.pontuacaoFinal;
+        });
+
+        const tbody = document.getElementById('tabelaRanking');
+        tbody.innerHTML = '';
+
+        if (lista.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">Nenhum resultado cadastrado no banco local.</td></tr>';
+            return;
         }
 
-        boxResultado.className = 'resultado sucesso';
-        boxResultado.innerHTML = `✅ A Atlética <strong>${nome || 'informada'}</strong> encerrou com <strong>${pontos}</strong> pontos!`;
+        lista.forEach((atletica, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${atletica.desclassificado ? '-' : index + 1 + 'º'}</td>
+                <td><strong>${atletica.nome}</strong></td>
+                <td>${atletica.pontosBrutos}</td>
+                <td>-${atletica.penalidades}</td>
+                <td><strong>${atletica.pontuacaoFinal}</strong></td>
+                <td>${atletica.desclassificado ? '<span class="status-desclassificado">ELIMINADA</span>' : '<span class="status-ativo">ATIVA</span>'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
+
+    function limparBancoDados() {
+        if (confirm('Deseja realmente apagar todo o histórico de pontuações do banco de dados local?')) {
+            localStorage.removeItem('jiufms_db');
+            carregarRanking();
+        }
+    }
+
+    // Carrega o ranking assim que a página é aberta
+    carregarRanking();
 </script>
 
 </body>
