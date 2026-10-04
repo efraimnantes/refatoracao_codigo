@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apuração JIUFMS</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        label { font-weight: bold; margin-top: 10px; display: block; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #004494; }
+        .resultado { margin-top: 20px; padding: 15px; border-radius: 4px; font-weight: bold; text-align: center; }
+        .sucesso { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .erro { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Apuração JIUFMS 🏆</h2>
+    
+    <label for="nomeAtletica">Nome da Atlética:</label>
+    <input type="text" id="nomeAtletica" placeholder="Ex: Engenharia">
+
+    <label for="posicoes">Posições (separadas por vírgula):</label>
+    <input type="text" id="posicoes" placeholder="Ex: 1, 2, 4 (Ouro, Prata, Participação)">
+
+    <label for="infracao">Infrações Disciplinares:</label>
+    <select id="infracao">
+        <option value="NENHUMA">Nenhuma Infração</option>
+        <option value="BRIGA">Briga (-50 pontos)</option>
+        <option value="PRECONCEITO">Preconceito (Desclassificação)</option>
+    </select>
+
+    <button onclick="calcularPontuacao()">Calcular Pontuação Final</button>
+
+    <div id="boxResultado" class="resultado" style="display: none;"></div>
+</div>
+
+<script>
+    // Reprodução da Lógica Limpa no Front-End
+    const PONTOS_OURO = 50;
+    const PONTOS_PRATA = 30;
+    const PONTOS_BRONZE = 20;
+    const PONTOS_PARTICIPACAO = 5;
+    const PENALIDADE_BRIGA = 50;
+
+    function calcularPontuacao() {
+        const nome = document.getElementById('nomeAtletica').value;
+        const posicoesInput = document.getElementById('posicoes').value;
+        const infracao = document.getElementById('infracao').value;
+        const boxResultado = document.getElementById('boxResultado');
+
+        boxResultado.style.display = 'block';
+
+        // Cláusula de Guarda (Separação de Fluxos de Execução)
+        if (infracao === "PRECONCEITO") {
+            boxResultado.className = 'resultado erro';
+            boxResultado.innerHTML = `⚠️ Desclassificação: A Atlética ${nome || 'informada'} cometeu infração gravíssima (Preconceito).`;
+            return;
+        }
+
+        // Calcula os pontos baseados no array de posições
+        let pontos = 0;
+        if (posicoesInput.trim() !== "") {
+            const posicoesArray = posicoesInput.split(',').map(num => parseInt(num.trim()));
+            posicoesArray.forEach(pos => {
+                if (pos === 1) pontos += PONTOS_OURO;
+                else if (pos === 2) pontos += PONTOS_PRATA;
+                else if (pos === 3) pontos += PONTOS_BRONZE;
+                else if (!isNaN(pos)) pontos += PONTOS_PARTICIPACAO;
+            });
+        }
+
+        // Aplica penalidades menores
+        if (infracao === "BRIGA") {
+            pontos -= PENALIDADE_BRIGA;
+        }
+
+        boxResultado.className = 'resultado sucesso';
+        boxResultado.innerHTML = `✅ A Atlética <strong>${nome || 'informada'}</strong> encerrou com <strong>${pontos}</strong> pontos!`;
+    }
+</script>
+
+</body>
+</html>
