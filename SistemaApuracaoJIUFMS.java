@@ -1,48 +1,83 @@
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
-// 4. Adotar uma Linguagem Ubíqua
+// Premissa 4: Linguagem Ubíqua
 enum TipoInfracao {
     BRIGA,
     PRECONCEITO
 }
 
-class Atletica {
+class Esporte {
     private String nome;
-    private List<Integer> posicoesModalidades;
-    private List<TipoInfracao> infracoes;
+    private double pesoPontuacao;
 
-    public Atletica(String nome, List<Integer> posicoes, List<TipoInfracao> infracoes) {
+    public Esporte(String nome, double pesoPontuacao) {
         this.nome = nome;
-        this.posicoesModalidades = posicoes;
-        this.infracoes = infracoes;
+        this.pesoPontuacao = pesoPontuacao;
+    }
+
+    public int calcularPontosPorPosicao(int posicao) {
+        int pontosBase;
+        if (posicao == 1) pontosBase = 50;
+        else if (posicao == 2) pontosBase = 30;
+        else if (posicao == 3) pontosBase = 20;
+        else pontosBase = 5;
+
+        return (int) Math.round(pontosBase * pesoPontuacao);
     }
 
     public String getNome() { return nome; }
-    public List<Integer> getPosicoesModalidades() { return posicoesModalidades; }
+}
+
+class ResultadoModalidade {
+    private Esporte esporte;
+    private int posicaoObtida;
+
+    public ResultadoModalidade(Esporte esporte, int posicaoObtida) {
+        this.esporte = esporte;
+        this.posicaoObtida = posicaoObtida;
+    }
+
+    public int getPontosCalculados() {
+        return esporte.calcularPontosPorPosicao(posicaoObtida);
+    }
+}
+
+class Atletica {
+    private String nome;
+    private List<ResultadoModalidade> resultados;
+    private List<TipoInfracao> infracoes;
+
+    public Atletica(String nome) {
+        this.nome = nome;
+        this.resultados = new ArrayList<>();
+        this.infracoes = new ArrayList<>();
+    }
+
+    public void adicionarResultado(Esporte esporte, int posicao) {
+        this.resultados.add(new ResultadoModalidade(esporte, posicao));
+    }
+
+    public void registrarInfracao(TipoInfracao infracao) {
+        this.infracoes.add(infracao);
+    }
+
+    public String getNome() { return nome; }
+    public List<ResultadoModalidade> getResultados() { return resultados; }
     public List<TipoInfracao> getInfracoes() { return infracoes; }
 }
 
 class CalculadoraJIUFMS {
-    // 3. Evitar Números Mágicos (Uso de Constantes)
-    private static final int PONTOS_OURO = 50;
-    private static final int PONTOS_PRATA = 30;
-    private static final int PONTOS_BRONZE = 20;
-    private static final int PONTOS_PARTICIPACAO = 5;
-
     private static final int PENALIDADE_BRIGA = 50;
-    private static final int PENALIDADE_PRECONCEITO = 100;
 
-    // 5. Funções Coesas e Desacopladas[cite: 1]
-    public int calcularPontosModalidades(List<Integer> posicoes) {
-        int pontos = 0;
-        for (int posicao : posicoes) {
-            if (posicao == 1) pontos += PONTOS_OURO;
-            else if (posicao == 2) pontos += PONTOS_PRATA;
-            else if (posicao == 3) pontos += PONTOS_BRONZE;
-            else pontos += PONTOS_PARTICIPACAO;
+    // Premissa 5: Funções Coesas e Desacopladas
+    public int calcularPontosEsportes(List<ResultadoModalidade> resultados) {
+        int totalPontos = 0;
+        for (ResultadoModalidade resultado : resultados) {
+            totalPontos += resultado.getPontosCalculados();
         }
-        return pontos;
+        return totalPontos;
     }
 
     public int calcularPenalidades(List<TipoInfracao> infracoes) {
@@ -50,48 +85,56 @@ class CalculadoraJIUFMS {
         for (TipoInfracao infracao : infracoes) {
             if (infracao == TipoInfracao.BRIGA) {
                 penalidadeTotal += PENALIDADE_BRIGA;
-            } else if (infracao == TipoInfracao.PRECONCEITO) {
-                penalidadeTotal += PENALIDADE_PRECONCEITO;
             }
         }
         return penalidadeTotal;
     }
 }
 
-class JuizGeral {
-    private CalculadoraJIUFMS calculadora;
+class ServicoRanking {
+    private CalculadoraJIUFMS calculadora = new CalculadoraJIUFMS();
 
-    public JuizGeral() {
-        this.calculadora = new CalculadoraJIUFMS();
-    }
-
-    public int apurarResultadoFinal(Atletica atletica) {
-        // 6. Separar Fluxos de Execução (Cláusula de Guarda)[cite: 1]
+    public int apurarPontuacaoFinal(Atletica atletica) {
+        // Premissa 6: Separar Fluxos de Execução (Guard Clause)
         if (atletica.getInfracoes().contains(TipoInfracao.PRECONCEITO)) {
-            throw new IllegalArgumentException("Desclassificação: A Atlética " + atletica.getNome() + " cometeu infração gravíssima (Preconceito).");
+            return 0; // Eliminada do torneio
         }
 
-        int pontosConquistados = calculadora.calcularPontosModalidades(atletica.getPosicoesModalidades());
+        int pontosConquistados = calculadora.calcularPontosEsportes(atletica.getResultados());
         int pontosPerdidos = calculadora.calcularPenalidades(atletica.getInfracoes());
 
-        return pontosConquistados - pontosPerdidos;
+        return Math.max(0, pontosConquistados - pontosPerdidos);
+    }
+
+    public void exibirRankingGeral(List<Atletica> atleticas) {
+        System.out.println("\n=== 🏆 RANKING GERAL JIUFMS ===");
+        
+        atleticas.stream()
+            .sorted(Comparator.comparingInt(this::apurarPontuacaoFinal).reversed())
+            .forEach(atletica -> {
+                boolean eliminada = atletica.getInfracoes().contains(TipoInfracao.PRECONCEITO);
+                int pontos = apurarPontuacaoFinal(atletica);
+                String status = eliminada ? "[DESCLASSIFICADA]" : pontos + " pontos";
+                System.out.println("Atlética " + atletica.getNome() + ": " + status);
+            });
     }
 }
 
 public class SistemaApuracaoJIUFMS {
     public static void main(String[] args) {
-        // Exemplo de uso aplicando: 1. Verificadores de Estilo e 2. Nomes Legíveis[cite: 1]
-        List<Integer> posicoes = List.of(1, 2, 4); // Ouro, Prata, Participação
-        List<TipoInfracao> infracoes = List.of(TipoInfracao.BRIGA);
+        Esporte futsal = new Esporte("Futsal", 1.0);
+        Esporte atletismo = new Esporte("Atletismo", 0.75);
 
-        Atletica atletica = new Atletica("Engenharia", posicoes, infracoes);
-        JuizGeral juiz = new JuizGeral();
+        Atletica engenharia = new Atletica("Engenharia");
+        engenharia.adicionarResultado(futsal, 1); // 50 pts
+        engenharia.adicionarResultado(atletismo, 2); // 23 pts (30 * 0.75)
+        engenharia.registrarInfracao(TipoInfracao.BRIGA); // -50 pts
 
-        try {
-            int pontuacaoFinal = juiz.apurarResultadoFinal(atletica);
-            System.out.println("A Atlética " + atletica.getNome() + " encerrou o JIUFMS com " + pontuacaoFinal + " pontos na classificação geral.");
-        } catch (IllegalArgumentException erro) {
-            System.err.println(erro.getMessage());
-        }
+        Atletica medicina = new Atletica("Medicina");
+        medicina.adicionarResultado(futsal, 2); // 30 pts
+        medicina.adicionarResultado(atletismo, 1); // 38 pts (50 * 0.75)
+
+        ServicoRanking servicoRanking = new ServicoRanking();
+        servicoRanking.exibirRankingGeral(List.of(engenharia, medicina));
     }
 }
